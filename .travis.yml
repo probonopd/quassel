@@ -21,12 +21,19 @@ script:
   - chmod a+x linuxdeployqt*.AppImage
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
   - export VERSION=$(git rev-parse --short HEAD) # linuxdeployqt uses this for naming the file
-  - sed -i -e 's|^Name=.*|Name=QuasselClient|g' appdir/usr/share/applications/quasselclient.desktop
+  - sed -i -e 's|^Name=.*|Name=Quassel Client|g' appdir/usr/share/applications/quasselclient.desktop
   - sed -i -e 's|^Name=.*|Name=Quassel|g' appdir/usr/share/applications/quassel.desktop
-  - sed -i -e 's|^Name=.*|Name=QuasselClient|g' appdir/usr/share/applications/quasselclient.desktop
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
-
+  - cp -r appdir/ quassel
+  - cp -r appdir/ client
+  - # first, the normal quassel
+  - rm ./quassel/usr/share/applications/quasselclient.desktop ./quassel/usr/bin/{quasselcore,quasselclient}
+  - ./linuxdeployqt*.AppImage ./quassel/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - ./linuxdeployqt*.AppImage ./quassel/usr/share/applications/*.desktop -appimage
+  - # first, the quassel client
+  - rm ./quassel/usr/share/applications/quassel.desktop ./quassel/usr/bin/{quasselcore,quassel}
+  - ./linuxdeployqt*.AppImage ./quassel/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - ./linuxdeployqt*.AppImage ./quassel/usr/share/applications/*.desktop -appimage
+  
 after_success:
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
   - # curl --upload-file ./APPNAME*.AppImage https://transfer.sh/APPNAME-git.$(git rev-parse --short HEAD)-x86_64.AppImage
