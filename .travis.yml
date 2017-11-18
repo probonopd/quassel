@@ -8,7 +8,7 @@ before_install:
   - # sudo apt-get update -qq
 
 install:
-  - sudo apt-get -y install libqt5webkit5-dev qttools5-dev qtscript5-dev libdbusmenu-qt-dev libdbusmenu-qt5-dev libphonon-dev libphonon4qt5-dev libqca2-dev qt4-dev-tools qttools5-dev-tools libphonon4qt5experimental4 
+  - sudo apt-get -y install libqt5webkit5-dev qttools5-dev qtscript5-dev libdbusmenu-qt-dev libdbusmenu-qt5-dev libphonon-dev libphonon4qt5-dev libqca2-dev qttools5-dev-tools libphonon4qt5experimental4 
   - # source /opt/qt*/bin/qt*-env.sh
 
 script:
