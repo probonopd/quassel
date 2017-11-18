@@ -4,13 +4,12 @@ sudo: require
 dist: trusty
 
 before_install:
-  - # sudo add-apt-repository ppa:beineri/opt-qt592-trusty -y
-  - # sudo apt-get update -qq
+  - sudo add-apt-repository ppa:beineri/opt-qt592-trusty -y
+  - sudo apt-get update -qq
 
 install:
-  - sudo apt-get -y install libqt5webkit5-dev qttools5-dev qtscript5-dev libdbusmenu-qt-dev libdbusmenu-qt5-dev libphonon-dev libphonon4qt5-dev libqca2-dev qttools5-dev-tools libphonon4qt5experimental4 
-  - # source /opt/qt*/bin/qt*-env.sh
-  - rm -rf /usr/lib/x86_64-linux-gnu/qt4/ || true # We really mean it
+  - sudo apt-get -y install qt59base qt59script qt59tools libdbusmenu-qt5-dev libphonon4qt5-dev libqca2-dev libphonon4qt5experimental4 
+  - source /opt/qt*/bin/qt*-env.sh
 
 script:
   - mkdir build
