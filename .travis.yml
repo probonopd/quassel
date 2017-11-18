@@ -30,7 +30,7 @@ script:
   - ./linuxdeployqt*.AppImage ./quassel.AppDir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - ./linuxdeployqt*.AppImage ./quassel.AppDir/usr/share/applications/*.desktop -appimage
   - # then, the quassel client
-  - rm ./client.AppDir.AppDir/usr/share/applications/quassel.desktop ./client.AppDir/usr/bin/{quasselcore,quassel}
+  - rm ./client.AppDir/usr/bin/{quasselcore,quassel}
   - ./linuxdeployqt*.AppImage ./client.AppDir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - ./linuxdeployqt*.AppImage ./client.AppDir/usr/share/applications/*.desktop -appimage
   
