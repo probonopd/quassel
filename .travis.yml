@@ -1,75 +1,34 @@
-os:
-  - linux
-  - osx
-
-sudo: required
+language: cpp
+compiler: gcc
+sudo: require
 dist: trusty
 
-language: cpp
-cache: ccache
+before_install:
+  - # sudo add-apt-repository ppa:beineri/opt-qt592-trusty -y
+  - # sudo apt-get update -qq
 
-compiler:
-  - gcc
-  - clang
+install:
+  - sudo apt-get -y install libqt5webkit5-dev qttools5-dev qtscript5-dev libdbusmenu-qt-dev libdbusmenu-qt5-dev libphonon-dev libphonon4qt5-dev libqca2-dev qt4-dev-tools qttools5-dev-tools libphonon4qt5experimental4 
+  - # source /opt/qt*/bin/qt*-env.sh
 
-env:
-  - QT_VERSION=qt4
-  - QT_VERSION=qt5
+script:
+  - qmake CONFIG+=release PREFIX=/usr
+  - make -j$(nproc)
+  - make INSTALL_ROOT=appdir -j$(nproc) install ; find appdir/
+  - wget -c -q "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+  - chmod a+x linuxdeployqt*.AppImage
+  - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+  - export VERSION=$(git rev-parse --short HEAD) # linuxdeployqt uses this for naming the file
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
 
-matrix:
-  exclude:
-    - compiler: clang
-      env: QT_VERSION=qt4
-    - os: osx
-      compiler: clang
-    - os: osx
-      env: QT_VERSION=qt4
-
-install: |-
-  if [ "$TRAVIS_OS_NAME" == "linux" ]
-  then
-    sudo apt-get -qy install libqt5webkit5-dev qttools5-dev qtscript5-dev
-    sudo apt-get -qy install libdbusmenu-qt-dev libdbusmenu-qt5-dev
-    sudo apt-get -qy install libphonon-dev libphonon4qt5-dev
-    sudo apt-get -qy install libqca2-dev
-    sudo apt-get -qy install qt4-dev-tools qttools5-dev-tools
-    sudo apt-get -qy install libphonon4qt5experimental4 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=805096
-  elif [ "$TRAVIS_OS_NAME" == "osx" ]
-  then
-    brew update
-    brew install ninja qt5
-  fi
-
-script: |-
-  mkdir build
-  cd build
-  if [ "$TRAVIS_OS_NAME" == "linux" ]
-  then
-    if [ "$QT_VERSION" = "qt4" ]; then cmake -DUSE_QT4=ON ..; fi
-    if [ "$QT_VERSION" = "qt5" ]; then cmake ..; fi
-    make
-  elif [ "$TRAVIS_OS_NAME" == "osx" ]
-  then
-    if [[ "$TRAVIS_TAG" != "" && "$GH_TOKEN" != "" ]]
-    then
-      PATH=$PATH:/usr/local/opt/qt5/bin
-      # The LDAP headers found in OSX Frameworks seem to be broken
-      cmake -G"Ninja" .. -DCMAKE_BUILD_TYPE=Release -DDEPLOY=ON -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 -DLDAP_INCLUDE_DIR=/usr/include/
-    else
-      cmake -G"Ninja" .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 -DLDAP_INCLUDE_DIR=/usr/include/
-    fi
-    ninja install
-  fi
-
-deploy:
-  provider: releases
-  api_key: "${GH_TOKEN}"
-  file_glob: true
-  file:
-    - "QuasselClient_MacOSX-x86_64_*.dmg"
-    - "QuasselCore_MacOSX-x86_64_*.dmg"
-    - "QuasselMono_MacOSX-x86_64_*.dmg"
-  skip_cleanup: true
-  on:
-    tags: true
-    condition: "$TRAVIS_OS_NAME == 'osx' && $GH_TOKEN != ''"
+after_success:
+  - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
+  - # curl --upload-file ./APPNAME*.AppImage https://transfer.sh/APPNAME-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  - bash upload.sh ./Quassel*.AppImage*
+  
+branches:
+  except:
+    - # Do not build tags that we create when we upload to GitHub Releases
+    - /^(?i:continuous)$/
