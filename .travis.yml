@@ -10,6 +10,7 @@ before_install:
 install:
   - sudo apt-get -y install libqt5webkit5-dev qttools5-dev qtscript5-dev libdbusmenu-qt-dev libdbusmenu-qt5-dev libphonon-dev libphonon4qt5-dev libqca2-dev qttools5-dev-tools libphonon4qt5experimental4 
   - # source /opt/qt*/bin/qt*-env.sh
+  - sudo rm -f /usr/bin/qmake ; sudo ln -s /usr/lib/x86_64-linux-gnu/qt5/bin/qmake /usr/bin/qmake
 
 script:
   - qmake CONFIG+=release PREFIX=/usr
