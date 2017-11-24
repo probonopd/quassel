@@ -24,8 +24,8 @@ script:
   - sed -i -e 's|^Name=.*|Name=Quassel Client|g' appdir/usr/share/applications/quasselclient.desktop
   - sed -i -e 's|^Name=.*|Name=Quassel|g' appdir/usr/share/applications/quassel.desktop
   - mkdir -p appdir/usr/plugins
-  - cp -r /opt/qt*/plugins/sqldrivers ./quassel.AppDir/usr/plugins # Workaround for https://github.com/probonopd/linuxdeployqt/pull/152
-  - cp -r /opt/qt*/plugins/platforminputcontexts ./quassel.AppDir/usr/plugins # Workaround for https://github.com/probonopd/linuxdeployqt/pull/152
+  - cp -r /opt/qt*/plugins/sqldrivers appdir/usr/plugins # Workaround for https://github.com/probonopd/linuxdeployqt/pull/152
+  - cp -r /opt/qt*/plugins/platforminputcontexts appdir/usr/plugins # Workaround for https://github.com/probonopd/linuxdeployqt/pull/152
   - cp -r appdir/ quassel.AppDir
   - cp -r appdir/ client.AppDir
   - # first, the normal quassel
