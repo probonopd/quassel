@@ -31,10 +31,12 @@ script:
   - # first, the normal quassel
   - rm ./quassel.AppDir/usr/share/applications/quasselclient.desktop ./quassel.AppDir/usr/bin/{quasselcore,quasselclient}
   - ./linuxdeployqt*.AppImage ./quassel.AppDir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - sed -i -e 's|x86_64-linux-gnu|x86_64-linux-xxx|g' ./quassel.AppDir/usr/lib/libphonon4qt5.so.4 # https://github.com/probonopd/linuxdeployqt/issues/193
   - ./linuxdeployqt*.AppImage ./quassel.AppDir/usr/share/applications/*.desktop -appimage
   - # then, the quassel client
   - rm ./client.AppDir/usr/share/applications/quassel.desktop ./client.AppDir/usr/bin/{quasselcore,quassel}
   - ./linuxdeployqt*.AppImage ./client.AppDir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - sed -i -e 's|x86_64-linux-gnu|x86_64-linux-xxx|g' ./client.AppDir/usr/lib/libphonon4qt5.so.4 # https://github.com/probonopd/linuxdeployqt/issues/193
   - ./linuxdeployqt*.AppImage ./client.AppDir/usr/share/applications/*.desktop -appimage
   
 after_success:
