@@ -3,13 +3,20 @@ compiler: gcc
 sudo: require
 dist: trusty
 
-before_install:
-  - sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y
-  - sudo apt-get update -qq
+#before_install:
+#  - sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y
+#  - sudo apt-get update -qq
 
 install:
-  - sudo apt-get -y install qt59base qt59script qt59tools libdbusmenu-qt5-dev libphonon4qt5-dev libqca2-dev libphonon4qt5experimental4 
-  - source /opt/qt*/bin/qt*-env.sh
+# - sudo apt-get -y install qt59base qt59script qt59tools libdbusmenu-qt5-dev libphonon4qt5-dev libqca2-dev libphonon4qt5experimental4 
+# - source /opt/qt*/bin/qt*-env.sh
+  - sudo apt-get -y install libdbusmenu-qt5-dev libphonon4qt5-dev libqca2-dev libphonon4qt5experimental4 
+  - wget -c "https://raw.githubusercontent.com/RPCS3/rpcs3/master/qt-installer-noninteractive.qs"
+  - sed -i -e 's|.*widget.selectComponent.*|widget.selectComponent("qt.qt5.5100.gcc_64");\nwidget.selectComponent("qt.qt5.5100.qtwebengine.gcc_64");|g' qt-installer-noninteractive.qs
+  - wget -c "http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" ; chmod a+x ./*.run
+  - QT_QPA_PLATFORM=minimal ./qt-unified-linux-x64-online.run --script qt-installer-noninteractive.qs --no-force-installations --verbose
+  - export CMAKE_PREFIX_PATH=$(readlink -f ~/Qt/*/gcc_64/lib/cmake) ; export LD_LIBRARY_PATH=$(readlink -f ~/Qt/*/gcc_64/lib) ; export PATH=$(readlink -f ~/Qt/*/gcc_64/bin/):${PATH}
+  - qmake -v
 
 script:
   - mkdir build
