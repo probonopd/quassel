@@ -77,7 +77,8 @@ CoreSession::CoreSession(UserId uid, bool restoreState, QObject *parent)
     _ircParser(new IrcParser(this)),
     scriptEngine(new QScriptEngine(this)),
     _processMessages(false),
-    _ignoreListManager(this)
+    _ignoreListManager(this),
+    _highlightRuleManager(this)
 {
     SignalProxy *p = signalProxy();
     p->setHeartBeatInterval(30);
@@ -105,6 +106,9 @@ CoreSession::CoreSession(UserId uid, bool restoreState, QObject *parent)
     p->attachSlot(SIGNAL(changePassword(PeerPtr,QString,QString,QString)), this, SLOT(changePassword(PeerPtr,QString,QString,QString)));
     p->attachSignal(this, SIGNAL(passwordChanged(PeerPtr,bool)));
 
+    p->attachSlot(SIGNAL(kickClient(int)), this, SLOT(kickClient(int)));
+    p->attachSignal(this, SIGNAL(disconnectFromCore()));
+
     loadSettings();
     initScriptEngine();
 
@@ -128,6 +132,7 @@ CoreSession::CoreSession(UserId uid, bool restoreState, QObject *parent)
     p->synchronize(networkConfig());
     p->synchronize(&_coreInfo);
     p->synchronize(&_ignoreListManager);
+    p->synchronize(&_highlightRuleManager);
     p->synchronize(transferManager());
     // Restore session state
     if (restoreState)
@@ -313,6 +318,9 @@ void CoreSession::recvMessageFromServer(NetworkId networkId, Message::Type type,
     QString networkName = currentNetwork ? currentNetwork->networkName() : QString("");
     if (_ignoreListManager.match(rawMsg, networkName) == IgnoreListManager::HardStrictness)
         return;
+
+    if (_highlightRuleManager.match(rawMsg, currentNetwork->myNick(), currentNetwork->identityPtr()->nicks()))
+        rawMsg.flags |= Message::Flag::Highlight;
 
     _messageQueue << rawMsg;
     if (!_processMessages) {
@@ -708,12 +716,26 @@ void CoreSession::globalAway(const QString &msg, const bool skipFormatting)
     }
 }
 
-void CoreSession::changePassword(PeerPtr peer, const QString &userName, const QString &oldPassword, const QString &newPassword)
-{
+void CoreSession::changePassword(PeerPtr peer, const QString &userName, const QString &oldPassword, const QString &newPassword) {
+    Q_UNUSED(peer);
+
     bool success = false;
     UserId uid = Core::validateUser(userName, oldPassword);
     if (uid.isValid() && uid == user())
         success = Core::changeUserPassword(uid, newPassword);
 
-    emit passwordChanged(peer, success);
+    signalProxy()->restrictTargetPeers(signalProxy()->sourcePeer(), [&]{
+        emit passwordChanged(nullptr, success);
+    });
+}
+
+void CoreSession::kickClient(int peerId) {
+    auto peer = signalProxy()->peerById(peerId);
+    if (peer == nullptr) {
+        qWarning() << "Invalid peer Id: " << peerId;
+        return;
+    }
+    signalProxy()->restrictTargetPeers(peer, [&]{
+        emit disconnectFromCore();
+    });
 }

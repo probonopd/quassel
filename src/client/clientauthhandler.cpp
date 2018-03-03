@@ -75,10 +75,21 @@ void ClientAuthHandler::connectToCore()
     QTcpSocket *socket = new QTcpSocket(this);
 #endif
 
-// TODO: Handle system proxy
 #ifndef QT_NO_NETWORKPROXY
-    if (_account.useProxy()) {
-        QNetworkProxy proxy(_account.proxyType(), _account.proxyHostName(), _account.proxyPort(), _account.proxyUser(), _account.proxyPassword());
+    QNetworkProxy proxy;
+    proxy.setType(_account.proxyType());
+    if (_account.proxyType() == QNetworkProxy::Socks5Proxy ||
+            _account.proxyType() == QNetworkProxy::HttpProxy) {
+        proxy.setHostName(_account.proxyHostName());
+        proxy.setPort(_account.proxyPort());
+        proxy.setUser(_account.proxyUser());
+        proxy.setPassword(_account.proxyPassword());
+    }
+
+    if (_account.proxyType() == QNetworkProxy::DefaultProxy) {
+        QNetworkProxyFactory::setUseSystemConfiguration(true);
+    } else {
+        QNetworkProxyFactory::setUseSystemConfiguration(false);
         socket->setProxy(proxy);
     }
 #endif
@@ -288,7 +299,7 @@ void ClientAuthHandler::startRegistration()
     useSsl = _account.useSsl();
 #endif
 
-    _peer->dispatch(RegisterClient(Quassel::buildInfo().fancyVersionString, Quassel::buildInfo().commitDate, useSsl));
+    _peer->dispatch(RegisterClient(Quassel::buildInfo().fancyVersionString, Quassel::buildInfo().commitDate, useSsl, Quassel::features()));
 }
 
 
@@ -305,7 +316,8 @@ void ClientAuthHandler::handle(const ClientRegistered &msg)
     _backendInfo = msg.backendInfo;
     _authenticatorInfo = msg.authenticatorInfo;
 
-    Client::setCoreFeatures(static_cast<Quassel::Features>(msg.coreFeatures));
+    Client::setCoreFeatures(Quassel::Features(msg.coreFeatures));
+    SignalProxy::current()->sourcePeer()->setFeatures(Quassel::Features(msg.coreFeatures));
 
     // The legacy protocol enables SSL at this point
     if(_legacy && _account.useSsl())

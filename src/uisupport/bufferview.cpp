@@ -89,14 +89,13 @@ void BufferView::init()
     setSortingEnabled(true);
     sortByColumn(0, Qt::AscendingOrder);
 
-    // activated() fails on X11 and Qtopia at least
-#if defined Q_WS_QWS || defined Q_WS_X11
-    disconnect(this, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(joinChannel(QModelIndex)));
-    connect(this, SIGNAL(doubleClicked(QModelIndex)), SLOT(joinChannel(QModelIndex)));
-#else
+#if defined Q_OS_MACOS || defined Q_OS_WIN
     // afaik this is better on Mac and Windows
     disconnect(this, SIGNAL(activated(QModelIndex)), this, SLOT(joinChannel(QModelIndex)));
     connect(this, SIGNAL(activated(QModelIndex)), SLOT(joinChannel(QModelIndex)));
+#else
+    disconnect(this, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(joinChannel(QModelIndex)));
+    connect(this, SIGNAL(doubleClicked(QModelIndex)), SLOT(joinChannel(QModelIndex)));
 #endif
 }
 
@@ -214,16 +213,6 @@ void BufferView::joinChannel(const QModelIndex &index)
     BufferInfo bufferInfo = index.data(NetworkModel::BufferInfoRole).value<BufferInfo>();
 
     Client::userInput(bufferInfo, QString("/JOIN %1").arg(bufferInfo.bufferName()));
-}
-
-
-void BufferView::keyPressEvent(QKeyEvent *event)
-{
-    if (event->key() == Qt::Key_Backspace || event->key() == Qt::Key_Delete) {
-        event->accept();
-        removeSelectedBuffers();
-    }
-    TreeViewTouch::keyPressEvent(event);
 }
 
 
@@ -592,13 +581,6 @@ void BufferView::hideCurrentBuffer()
     //The check above means we won't be looking at a network, which should always be the first row, so we can just go backwards.
     changeBuffer(Backward);
 
-    /*if(removedRows.contains(bufferId))
-      continue;
-
-    removedRows << bufferId;*/
-    /*if(permanently)
-      config()->requestRemoveBufferPermanently(bufferId);
-    else*/
     config()->requestRemoveBuffer(bufferId);
 }
 

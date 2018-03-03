@@ -146,6 +146,7 @@
 #include "settingspages/connectionsettingspage.h"
 #include "settingspages/coreaccountsettingspage.h"
 #include "settingspages/coreconnectionsettingspage.h"
+#include <settingspages/corehighlightsettingspage.h>
 #include "settingspages/dccsettingspage.h"
 #include "settingspages/highlightsettingspage.h"
 #include "settingspages/identitiessettingspage.h"
@@ -203,6 +204,7 @@ void MainWin::init()
         SLOT(messagesInserted(const QModelIndex &, int, int)));
     connect(GraphicalUi::contextMenuActionProvider(), SIGNAL(showChannelList(NetworkId)), SLOT(showChannelList(NetworkId)));
     connect(GraphicalUi::contextMenuActionProvider(), SIGNAL(showIgnoreList(QString)), SLOT(showIgnoreList(QString)));
+    connect(Client::instance(), SIGNAL(showIgnoreList(QString)), SLOT(showIgnoreList(QString)));
 
     connect(Client::coreConnection(), SIGNAL(startCoreSetup(QVariantList, QVariantList)), SLOT(showCoreConfigWizard(QVariantList, QVariantList)));
     connect(Client::coreConnection(), SIGNAL(connectionErrorPopup(QString)), SLOT(handleCoreConnectionError(QString)));
@@ -224,7 +226,7 @@ void MainWin::init()
     setupActions();
     setupBufferWidget();
     setupMenus();
-    setupTransferWidget();
+    // setupTransferWidget(); not ready yet
     setupChatMonitor();
     setupTopicWidget();
     setupInputWidget();
@@ -1442,6 +1444,7 @@ void MainWin::showSettingsDlg()
     dlg->registerSettingsPage(new SonnetSettingsPage(dlg));
 #endif
     dlg->registerSettingsPage(new HighlightSettingsPage(dlg));
+    dlg->registerSettingsPage(new CoreHighlightSettingsPage(dlg));
     dlg->registerSettingsPage(new NotificationsSettingsPage(dlg));
     dlg->registerSettingsPage(new BacklogSettingsPage(dlg));
 
@@ -1451,7 +1454,7 @@ void MainWin::showSettingsDlg()
     dlg->registerSettingsPage(new NetworksSettingsPage(dlg));
     dlg->registerSettingsPage(new AliasesSettingsPage(dlg));
     dlg->registerSettingsPage(new IgnoreListSettingsPage(dlg));
-    dlg->registerSettingsPage(new DccSettingsPage(dlg));
+    // dlg->registerSettingsPage(new DccSettingsPage(dlg)); not ready yet
 
     // Category: Remote Cores
     if (Quassel::runMode() != Quassel::Monolithic) {

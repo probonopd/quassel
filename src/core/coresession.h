@@ -26,6 +26,7 @@
 
 #include "corecoreinfo.h"
 #include "corealiasmanager.h"
+#include "corehighlightrulemanager.h"
 #include "coreignorelistmanager.h"
 #include "peer.h"
 #include "protocol.h"
@@ -87,6 +88,7 @@ public:
     inline CoreIrcListHelper *ircListHelper() const { return _ircListHelper; }
 
     inline CoreIgnoreListManager *ignoreListManager() { return &_ignoreListManager; }
+    inline HighlightRuleManager *highlightRuleManager() { return &_highlightRuleManager; }
     inline CoreTransferManager *transferManager() const { return _transferManager; }
     inline CoreDccConfig *dccConfig() const { return _dccConfig; }
 
@@ -131,6 +133,8 @@ public slots:
 
     void changePassword(PeerPtr peer, const QString &userName, const QString &oldPassword, const QString &newPassword);
 
+    void kickClient(int peerId);
+
     QHash<QString, QString> persistentChannels(NetworkId) const;
 
     /**
@@ -168,6 +172,8 @@ signals:
     void networkDisconnected(NetworkId);
 
     void passwordChanged(PeerPtr peer, bool success);
+
+    void disconnectFromCore();
 
 protected:
     virtual void customEvent(QEvent *event);
@@ -234,6 +240,7 @@ private:
     QList<RawMessage> _messageQueue;
     bool _processMessages;
     CoreIgnoreListManager _ignoreListManager;
+    CoreHighlightRuleManager _highlightRuleManager;
 };
 
 

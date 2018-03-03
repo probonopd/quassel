@@ -183,6 +183,10 @@ void CoreAuthHandler::handle(const RegisterClient &msg)
     // XXX: FIXME: use client features here: we cannot pass authenticators if the client is too old!
     _peer->dispatch(ClientRegistered(Quassel::features(), configured, backends, useSsl, authenticators));
 
+    _peer->setBuildDate(msg.buildDate);
+    _peer->setClientVersion(msg.clientVersion);
+    _peer->setFeatures(Quassel::Features(msg.clientFeatures));
+
     if (_legacy && useSsl)
         startSsl();
 

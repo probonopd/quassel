@@ -18,8 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.         *
  ***************************************************************************/
 
-#ifndef CLIENT_H_
-#define CLIENT_H_
+#pragma once
 
 #include <QList>
 #include <QPointer>
@@ -27,6 +26,7 @@
 #include "bufferinfo.h"
 #include "coreaccount.h"
 #include "coreconnection.h"
+#include "highlightrulemanager.h"
 #include "quassel.h"
 #include "types.h"
 
@@ -122,8 +122,11 @@ public:
     static inline ClientUserInputHandler *inputHandler() { return instance()->_inputHandler; }
     static inline NetworkConfig *networkConfig() { return instance()->_networkConfig; }
     static inline ClientIgnoreListManager *ignoreListManager() { return instance()->_ignoreListManager; }
+    static inline HighlightRuleManager *highlightRuleManager() { return instance()->_highlightRuleManager; }
     static inline ClientTransferManager *transferManager() { return instance()->_transferManager; }
     static inline TransferModel *transferModel() { return instance()->_transferModel; }
+
+    static inline BufferSyncer *bufferSyncer() { return instance()->_bufferSyncer; }
 
     static inline CoreAccountModel *coreAccountModel() { return instance()->_coreAccountModel; }
     static inline CoreConnection *coreConnection() { return instance()->_coreConnection; }
@@ -147,6 +150,11 @@ public:
     static void purgeKnownBufferIds();
 
     static void changePassword(const QString &oldPassword, const QString &newPassword);
+    static void kickClient(int peerId);
+
+    void displayIgnoreList(QString ignoreRule) {
+        emit showIgnoreList(ignoreRule);
+    }
 
 #if QT_VERSION < 0x050000
     static void logMessage(QtMsgType type, const char *msg);
@@ -159,6 +167,7 @@ signals:
     void requestNetworkStates();
 
     void showConfigWizard(const QVariantMap &coredata);
+    void showIgnoreList(QString ignoreRule);
 
     void connected();
     void disconnected();
@@ -199,6 +208,8 @@ signals:
 
     //! Requests a password change (user name must match the currently logged in user)
     void requestPasswordChange(PeerPtr peer, const QString &userName, const QString &oldPassword, const QString &newPassword);
+
+    void requestKickClient(int peerId);
     void passwordChanged(bool success);
 
 public slots:
@@ -226,7 +237,7 @@ private slots:
 
     void corePasswordChanged(PeerPtr, bool success);
 
-    void requestInitialBacklog();
+    void finishConnectionInitialization();
 
     void sendBufferedUserInput();
 
@@ -235,8 +246,9 @@ private:
     virtual ~Client();
     void init();
 
+    void requestInitialBacklog();
+
     static void addNetwork(Network *);
-    static inline BufferSyncer *bufferSyncer() { return instance()->_bufferSyncer; }
 
     static QPointer<Client> instanceptr;
 
@@ -254,6 +266,7 @@ private:
     ClientUserInputHandler *_inputHandler;
     NetworkConfig *_networkConfig;
     ClientIgnoreListManager *_ignoreListManager;
+    HighlightRuleManager *_highlightRuleManager;
     ClientTransferManager *_transferManager;
     TransferModel *_transferModel;
 
@@ -278,6 +291,3 @@ private:
 
     friend class CoreConnection;
 };
-
-
-#endif
