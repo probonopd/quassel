@@ -214,7 +214,7 @@ bool QtUiApplication::migrateSettings()
     //
     // NOTE:  If you increase the minor version, you MUST ALSO add new version upgrade logic in
     // applySettingsMigration()!  Otherwise, settings upgrades will fail.
-    const uint VERSION_MINOR_CURRENT = 6;
+    const uint VERSION_MINOR_CURRENT = 7;
     // Stored minor version
     uint versionMinor = s.versionMinor();
 
@@ -279,6 +279,22 @@ bool QtUiApplication::applySettingsMigration(QtUiSettings settings, const uint n
     // saved.  Exceptions will be noted below.
     // NOTE:  If you add new upgrade logic here, you MUST ALSO increase VERSION_MINOR_CURRENT in
     // migrateSettings()!  Otherwise, your upgrade logic won't ever be called.
+    case 7:
+    {
+        // New default changes: UseProxy is no longer used in CoreAccountSettings
+        CoreAccountSettings s;
+        for (auto &&accountId : s.knownAccounts()) {
+            auto map = s.retrieveAccountData(accountId);
+            if (!map.value("UseProxy", false).toBool()) {
+                map["ProxyType"] = static_cast<int>(QNetworkProxy::ProxyType::NoProxy);
+            }
+            map.remove("UseProxy");
+            s.storeAccountData(accountId, map);
+        }
+
+        // Migration complete!
+        return true;
+    }
     case 6:
     {
         // New default changes: sender colors switched around to Tango-ish theme

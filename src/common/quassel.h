@@ -74,12 +74,15 @@ public:
         CapNegotiation = 0x0020,           /// IRCv3 capability negotiation, account tracking
         VerifyServerSSL = 0x0040,          /// IRC server SSL validation
         CustomRateLimits = 0x0080,         /// IRC server custom message rate limits
-        DccFileTransfer = 0x0100,
+        DccFileTransfer = 0x0100,          /// DCC file transfer support (forcefully disabled for now)
         AwayFormatTimestamp = 0x0200,      /// Timestamp formatting in away (e.g. %%hh:mm%%)
-        // Whether or not the core supports auth backends.
-        Authenticators = 0x0400,
+        Authenticators = 0x0400,           /// Whether or not the core supports auth backends.
+        BufferActivitySync = 0x0800,       /// Sync buffer activity status
+        CoreSideHighlights = 0x1000,       /// Core-Side highlight configuration and matching
+        SenderPrefixes = 0x2000,           /// Show prefixes for senders in backlog
+        RemoteDisconnect = 0x4000,         /// Allow this peer to be remotely disconnected
 
-        NumFeatures = 0x0400
+        NumFeatures = 0x4000
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
